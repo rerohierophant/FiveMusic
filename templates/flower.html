@@ -16,41 +16,40 @@
     </div>
 
     <script>
-        let output = {{ user_mood }}
+        // 从后端传递的 user_mood 变量渲染到 JavaScript 中
+        let output = "{{ request.session.user_mood }}";  // 确保使用双引号包裹模板变量，防止格式错误
+
+        // 在页面加载时执行图片替换函数
+        window.onload = function() {
+            replaceImageSrcBasedOnOutput(output);
+        };
+
+        // 根据输出值替换图片
         function replaceImageSrcBasedOnOutput(output) {
-            // 检查输出是否为 "sad"
-            if (output === "sad") {
-                var image = document.getElementById("img");
-                if (image) {
-                    image.src = "{% static 'pictures/香水卡片-忧.png' %}";
-                }
-            }
-            if (output === "happy") {
-                var image = document.getElementById("img");
-                if (image) {
-                    image.src = "{% static 'pictures/香水卡片-喜.png' %}";
-                }
-            }
-            if (output === "think") {
-                var image = document.getElementById("img");
-                if (image) {
-                    image.src = "{% static 'pictures/香水卡片-思.png' %}";
-                }
-            }
-            if (output === "anger") {
-                var image = document.getElementById("img");
-                if (image) {
-                    image.src = "{% static 'pictures/香水卡片-怒.png' %}";
-                }
-            }
-            if (output === "fear") {
-                var image = document.getElementById("img");
-                if (image) {
-                    image.src = "{% static 'pictures/香水卡片-恐.png' %}";
+            var image = document.getElementById("img");
+            if (image) {
+                switch (output) {
+                    case "忧":
+                        image.src = "{% static 'pictures/香水卡片-忧.png' %}";
+                        break;
+                    case "喜":
+                        image.src = "{% static 'pictures/香水卡片-喜.png' %}";
+                        break;
+                    case "思":
+                        image.src = "{% static 'pictures/香水卡片-思.png' %}";
+                        break;
+                    case "怒":
+                        image.src = "{% static 'pictures/香水卡片-怒.png' %}";
+                        break;
+                    case "恐":
+                        image.src = "{% static 'pictures/香水卡片-恐.png' %}";
+                        break;
+                    default:
+                        // 如果没有匹配的情绪，保持默认图片
+                        image.src = "{% static 'pictures/香水卡片-喜.png' %}";
                 }
             }
         }
     </script>
-    
 </body>
-</html>  
+</html>

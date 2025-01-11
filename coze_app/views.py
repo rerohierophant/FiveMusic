@@ -5,8 +5,7 @@ import re
 
 from django.shortcuts import redirect
 from django.shortcuts import render
-from langchain_community.chat_models import ChatCoze
-from langchain_core.messages import HumanMessage
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -15,7 +14,7 @@ from django.conf import settings
 
 coze_url = "https://api.coze.cn/v1/workflow/run"
 coze_headers = {
-    "Authorization": "Bearer pat_5qT5weHV5EmXifvWEyAwYCRJhT0MzAihFgNVw1meH0qL0IsTlhFtAURFhSzGJwKM",
+    "Authorization": "Bearer pat_D7ivM5vVZ0Br8CQAVgnECSoUrGBb7V0OmDU9UR609EWA3zRESONFeEYA3e3GdSBL",
     "Content-Type": "application/json",
     "Accept": "*/*",
     "Host": "api.coze.cn",
@@ -24,6 +23,7 @@ coze_headers = {
 
 session = {}
 user_mood = ''
+img_explain_result = ''
 
 result_default1 = '''-房子外观描述：房子外观方正，屋顶线条简洁，烟囱细长，整体给人一种简洁而稳定的感觉。
 -树外观描述：这棵树是风景画中的树，大树冠，树冠呈云状或球形，树叶浓密，树干粗大，用曲线形线条描画树干表面。
@@ -50,6 +50,7 @@ result_default3 = '''-房子外观描述：房子高大于宽，线条不连续�
 -用户心情：思'''
 
 defaults = [result_default1, result_default2, result_default3]
+
 
 def index(request):
     return render(request, 'index.html')
@@ -98,24 +99,15 @@ def htp(request):
             }
         }
         response = requests.post(coze_url, headers=coze_headers, json=payload)
-
-        print("\n")
-        print(response)
         print(response.text)
-        print("\n")
+        data = response.json().get("data")
+        result = json.loads(data)["data"]
 
-        code = json.loads(response.text).get('code')
-        if code != 200:
-            selected_element = random.choice(defaults)
-            session['result'] = selected_element
-            session['status'] = 'done'  # 标记处理状态为完成
-        else:
-            data = response.json().get("data")
-            result = json.loads(data)["data"]
+        print("result]\n")
+        print(result)
 
-            # 将结果存储到 session 中
-            session['result'] = result
-            session['status'] = 'done'  # 标记处理状态为完成
+        session['result'] = result
+        session['status'] = 'done'  # 标记处理状态为完成
 
         return JsonResponse({'status': 'processing'})
 
@@ -143,6 +135,7 @@ def htp_view(request):
         match = re.search(regex, result, re.DOTALL)
         if match:
             info[key] = match.group(1).strip()
+            print("info-key" + info[key])
 
     # 提取结果
     house_desc = info.get('house_desc')
@@ -153,8 +146,10 @@ def htp_view(request):
     music_prompt = info.get('music_prompt')
     user_mood = info.get('user_mood')
 
+    request.session['user_mood'] = user_mood
+
     return render(request, 'htp.html', {
-        'result': result,
+        'result': img_explain_result,
         'house_desc': house_desc,
         'tree_desc': tree_desc,
         'person_desc': person_desc,
@@ -197,9 +192,8 @@ def get_coze_suggest(request):
         }
 
         response = requests.post(coze_url, headers=coze_headers, json=payload)
-        print(response.text)
+        # print(response.text)
         data = response.json().get("data")
         print(data)
         result = json.loads(data)["data"]
-
         return JsonResponse({'result': result, 'user_mood': user_mood})

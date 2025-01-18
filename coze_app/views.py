@@ -1,11 +1,7 @@
 import base64
 import os
-import random
 import re
-
-from django.shortcuts import redirect
 from django.shortcuts import render
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json

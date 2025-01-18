@@ -1,5 +1,3 @@
-import requests
-import json
 import re
 
 url = "https://api.coze.cn/v1/workflow/run"
